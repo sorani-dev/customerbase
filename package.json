@@ -10,7 +10,7 @@
     "start": "node server.js",
     "serve:dev": "nodemon server.js",
     "json:dev": "json-server --watch data.json",
-    "serve": "yarn run \"serve:dev\" && yarn run \"json:dev\""
+    "serve": "concurrently \"yarn run serve:dev\" \"yarn run json:dev\""
   },
   "dependencies": {
     "axios": "^0.24.0",
