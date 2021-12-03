@@ -1,5 +1,5 @@
 const { query } = require('express')
-const { buildSchema, GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt } = require('graphql')
+const { buildSchema, GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList } = require('graphql')
 
 // Hardcoded data
 const customers = [
@@ -34,6 +34,12 @@ const RootQuery = new GraphQLObjectType({
                         return customers[i]
                     }
                 }
+            }
+        },
+        customers: {
+            type: new GraphQLList(CustomerType),
+            resolve() {
+                return customers
             }
         }
     }
