@@ -1,6 +1,6 @@
 const { default: axios } = require('axios')
 const { query } = require('express')
-const { buildSchema, GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList } = require('graphql')
+const { buildSchema, GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList, GraphQLNonNull } = require('graphql')
 
 const BASE_URL = 'http://localhost:3000/customers'
 // Hardcoded data
@@ -48,20 +48,64 @@ const RootQuery = new GraphQLObjectType({
         customers: {
             type: new GraphQLList(CustomerType),
             resolve() {
-                axios.get(`${BASE_URL}/`)
+                return axios.get(`${BASE_URL}/`)
                     .then(res => {
                         const data = res.data
                         console.log(data);
                         return data
                     })
-                return customers
             }
         }
     }
 })
 
+// Mutations
+const mutation = new GraphQLObjectType({
+    name: 'Mutation',
+    fields: {
+        addCustomer: {
+            type: CustomerType,
+            args: {
+                name: { type: new GraphQLNonNull(GraphQLString) },
+                email: { type: new GraphQLNonNull(GraphQLString) },
+                age: { type: new GraphQLNonNull(GraphQLInt) }
+            },
+            resolve(parentValue, { name, email, age }) {
+                return axios.post(BASE_URL, {
+                    name, email, age
+                })
+                    .then(res => res.data)
+            }
+        },
+        deleteCustomer: {
+            type: CustomerType,
+            args: {
+                id: { type: new GraphQLNonNull(GraphQLString) },
+            },
+            resolve(parentValue, { id }) {
+                return axios.delete(`${BASE_URL}/${id}`)
+                    .then(({ data }) => data)
+            }
+        },
+        updateCustomer: {
+            type: CustomerType,
+            args: {
+                id: { type: new GraphQLNonNull(GraphQLString) },
+                name: { type: GraphQLString },
+                email: { type: GraphQLString },
+                age: { type: GraphQLInt }
+            },
+            resolve(parentValue, args) {
+                return axios.patch(`${BASE_URL}/${args.id}`, args)
+                    .then(res => res.data)
+            }
+        },
+    }
+})
+
 const schema = new GraphQLSchema({
     query: RootQuery,
+    mutation,
 })
 
 module.exports = schema
